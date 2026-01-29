@@ -108,8 +108,9 @@ export default function SignupPage() {
 
         signIn("password", formData)
             .catch((err) => {
-                setError("Could not create account");
-                console.error(err);
+                console.error("Sign up error:", err);
+                const errorMessage = err instanceof Error ? err.message : "Could not create account";
+                setError(errorMessage);
             });
     };
 

@@ -12,6 +12,7 @@ import type * as admin from "../admin.js";
 import type * as analytics from "../analytics.js";
 import type * as auth from "../auth.js";
 import type * as clearDb from "../clearDb.js";
+import type * as debug from "../debug.js";
 import type * as files from "../files.js";
 import type * as http from "../http.js";
 import type * as items from "../items.js";
@@ -35,6 +36,7 @@ declare const fullApi: ApiFromModules<{
   analytics: typeof analytics;
   auth: typeof auth;
   clearDb: typeof clearDb;
+  debug: typeof debug;
   files: typeof files;
   http: typeof http;
   items: typeof items;

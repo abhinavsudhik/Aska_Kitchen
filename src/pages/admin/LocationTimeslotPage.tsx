@@ -27,6 +27,7 @@ export default function LocationTimeslotPage() {
     const [editLocationIds, setEditLocationIds] = useState<Id<"locations">[]>([]);
     const [editOrderStart, setEditOrderStart] = useState("");
     const [editOrderEnd, setEditOrderEnd] = useState("");
+    const [editDeliveryTime, setEditDeliveryTime] = useState("");
 
     const handleAddLocation = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -76,6 +77,7 @@ export default function LocationTimeslotPage() {
         setEditLocationIds(timeslot.availableLocationIds);
         setEditOrderStart(timeslot.orderStartTime || "");
         setEditOrderEnd(timeslot.orderEndTime || "");
+        setEditDeliveryTime(timeslot.deliveryTime || "");
     };
 
     const saveEditTimeslot = async () => {
@@ -84,7 +86,8 @@ export default function LocationTimeslotPage() {
                 id: editingTimeslotId,
                 availableLocationIds: editLocationIds,
                 orderStartTime: editOrderStart,
-                orderEndTime: editOrderEnd
+                orderEndTime: editOrderEnd,
+                deliveryTime: editDeliveryTime
             });
             setEditingTimeslotId(null);
             setEditLocationIds([]);
@@ -208,6 +211,11 @@ export default function LocationTimeslotPage() {
                                                     <label className="text-xs text-gray-500">End</label>
                                                     <input type="time" className="w-full border p-1 rounded text-sm" value={editOrderEnd} onChange={e => setEditOrderEnd(e.target.value)} />
                                                 </div>
+                                            </div>
+
+                                            <p className="text-xs font-medium text-gray-700 mb-2">Delivery Time:</p>
+                                            <div className="mb-3">
+                                                <input type="time" className="w-full border p-1 rounded text-sm" value={editDeliveryTime} onChange={e => setEditDeliveryTime(e.target.value)} />
                                             </div>
 
                                             <p className="text-xs font-medium text-gray-700 mb-2">Available Locations:</p>

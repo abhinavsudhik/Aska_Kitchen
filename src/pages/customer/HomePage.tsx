@@ -123,7 +123,7 @@ export default function HomePage() {
                                 })
                                 .map((ts) => (
                                     <option key={ts._id} value={ts._id}>
-                                        {ts.label} ({ts.startTime} - {ts.endTime})
+                                        {ts.label} ({ts.startTime} - {ts.endTime}) - Delivery by {ts.deliveryTime}
                                     </option>
                                 ))}
                         </select>
@@ -227,13 +227,20 @@ export default function HomePage() {
 
                             return (
                                 <div key={item._id} className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden border border-gray-100 flex flex-col group">
-                                    <div className="h-48 bg-gray-200 relative overflow-hidden">
+                                    <div className={`h-48 bg-gray-200 relative overflow-hidden ${item.isAvailable === false ? 'grayscale' : ''}`}>
                                         <FoodItemImage
                                             storageId={item.imageStorageId}
                                             imageUrl={item.imageUrl}
                                             name={item.name}
                                         />
-                                        {itemQuantity > 0 && (
+                                        {item.isAvailable === false && (
+                                            <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
+                                                <span className="bg-white/90 text-gray-800 px-3 py-1 rounded-full text-sm font-bold shadow-sm">
+                                                    Unavailable
+                                                </span>
+                                            </div>
+                                        )}
+                                        {itemQuantity > 0 && item.isAvailable !== false && (
                                             <div className="absolute top-2 right-2 bg-[#2E7D32] text-white px-3 py-1 rounded-full text-sm font-bold shadow-lg">
                                                 {itemQuantity} in cart
                                             </div>
@@ -246,7 +253,14 @@ export default function HomePage() {
                                         </div>
                                         <p className="text-gray-500 text-sm mb-4 line-clamp-2">{item.description}</p>
                                         <div className="mt-auto">
-                                            {itemQuantity > 0 ? (
+                                            {item.isAvailable === false ? (
+                                                <button
+                                                    disabled
+                                                    className="w-full py-2 font-semibold rounded-lg bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                                                >
+                                                    Unavailable
+                                                </button>
+                                            ) : itemQuantity > 0 ? (
                                                 <div className="flex items-center justify-between w-full bg-[#E8F5E9] rounded-lg border border-[#C8E6C9] p-1">
                                                     <button
                                                         onClick={(e) => {

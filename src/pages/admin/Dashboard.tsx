@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, usePaginatedQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 // import { useReactToPrint } from "react-to-print";
@@ -29,15 +29,15 @@ export default function AdminDashboard() {
         })() : undefined,
     } : {};
 
-    const allOrders = useQuery(api.orders.listOrders, filterParams);
+    const { results: allOrders, status: orderStatus, loadMore } = usePaginatedQuery(
+        api.orders.listOrders,
+        filterParams,
+        { initialNumItems: 20 }
+    );
     const profitStats = useQuery(api.orders.getProfitStats, filterParams);
 
     const updateStatus = useMutation(api.orders.updateStatus);
     const printRef = useRef<HTMLDivElement>(null);
-
-    // const handlePrint = useReactToPrint({
-    //   content: () => printRef.current,
-    // });
 
     // Manual print handler for simplicity as react-to-print isn't installed
     const handlePrint = () => {
@@ -53,13 +53,8 @@ export default function AdminDashboard() {
         setSelectedTimeslot("");
     };
 
-    // Calculate generic stats
-    // const totalRevenue = allOrders?.reduce((acc, o) => acc + o.totalAmount, 0) || 0;
-    // const purchaseCost = allOrders?.reduce((acc, o) => acc + o.items.reduce((s, i) => s + (i.price * 0.6) * i.quantity, 0), 0) || 0; // Mock purchase cost logic if not storing purchase price in order snapshot
-    // Actually we only stored selling price in order snapshot. Purchase price is in Item. 
-    // For exact profit calc, we should've snapshot purchase price too. I'll skip complex profit logic for now and just show totals.
-
-    if (!allOrders || !timeslots) return <div>Loading Dashboard...</div>;
+    if (!allOrders && orderStatus === "LoadingFirstPage") return <div>Loading Dashboard...</div>;
+    if (!timeslots) return <div>Loading Dashboard...</div>;
 
     return (
         <div className="space-y-6">
@@ -126,7 +121,7 @@ export default function AdminDashboard() {
 
                     {(selectedDate || selectedTimeslot) && (
                         <span className="text-sm text-gray-500 ml-auto">
-                            Showing {allOrders.length} filtered order{allOrders.length !== 1 ? 's' : ''}
+                            Showing {allOrders ? allOrders.length : 0} orders
                         </span>
                     )}
                 </div>
@@ -151,7 +146,7 @@ export default function AdminDashboard() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
-                        {allOrders.map((order) => (
+                        {allOrders?.map((order) => (
                             <tr key={order._id} className="hover:bg-gray-50">
                                 <td className="px-6 py-4 font-mono font-medium">{order.invoiceNumber}</td>
                                 <td className="px-6 py-4">{order.userName}</td>
@@ -186,6 +181,16 @@ export default function AdminDashboard() {
                         ))}
                     </tbody>
                 </table>
+                {orderStatus === "CanLoadMore" && (
+                    <div className="p-4 flex justify-center border-t border-gray-100 no-print">
+                        <button
+                            onClick={() => loadMore(20)}
+                            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition font-medium"
+                        >
+                            Load More
+                        </button>
+                    </div>
+                )}
             </div>
 
             {/* Profit Modal */}

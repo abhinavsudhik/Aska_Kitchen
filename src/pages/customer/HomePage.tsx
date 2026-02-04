@@ -52,7 +52,13 @@ export default function HomePage() {
     const user = useQuery(api.users.currentUser);
 
     // Clear selected timeslot if it becomes invalid (e.g. window closes)
+    // Clear selected timeslot if it becomes invalid (e.g. window closes)
     useEffect(() => {
+        /* 
+           Disabled strict validation to allow viewing menu for closed slots.
+           Users can verify availability but we shouldn't auto-remove selection just for viewing.
+        */
+        /*
         if (!selectedTimeslotId || !timeslots) return;
 
         const selectedTs = timeslots.find(ts => ts._id === selectedTimeslotId);
@@ -77,6 +83,7 @@ export default function HomePage() {
             setSelectedTimeslotId(null);
             setSelectedLocationId(null);
         }
+        */
     }, [selectedTimeslotId, timeslots, setSelectedTimeslotId, setSelectedLocationId]);
 
     return (
@@ -106,70 +113,28 @@ export default function HomePage() {
                         >
                             <option value="" disabled>Choose a pickup time...</option>
                             {timeslots
-                                ?.filter(ts => {
-                                    if (!ts.orderStartTime || !ts.orderEndTime) return true; // Legacy support: if no window set, always show
-
-                                    const now = new Date();
-                                    const currentHours = now.getHours().toString().padStart(2, '0');
-                                    const currentMinutes = now.getMinutes().toString().padStart(2, '0');
-                                    const currentTime = `${currentHours}:${currentMinutes}`;
-
-                                    if (ts.orderStartTime <= ts.orderEndTime) {
-                                        return currentTime >= ts.orderStartTime && currentTime <= ts.orderEndTime;
-                                    } else {
-                                        // Overnight window (e.g. 22:00 to 02:00)
-                                        return currentTime >= ts.orderStartTime || currentTime <= ts.orderEndTime;
-                                    }
-                                })
-                                .map((ts) => (
-                                    <option key={ts._id} value={ts._id}>
-                                        {ts.label} ({ts.startTime} - {ts.endTime}) - Delivery by {ts.deliveryTime}
-                                    </option>
-                                ))}
-                        </select>
-                        {timeslots && timeslots.filter(ts => {
-                            if (!ts.orderStartTime || !ts.orderEndTime) return true;
-                            const now = new Date();
-                            const currentHours = now.getHours().toString().padStart(2, '0');
-                            const currentMinutes = now.getMinutes().toString().padStart(2, '0');
-                            const currentTime = `${currentHours}:${currentMinutes}`;
-
-                            if (ts.orderStartTime <= ts.orderEndTime) {
-                                return currentTime >= ts.orderStartTime && currentTime <= ts.orderEndTime;
-                            } else {
-                                return currentTime >= ts.orderStartTime || currentTime <= ts.orderEndTime;
-                            }
-                        }).length === 0 && (
-                                <div className="mt-2 text-sm text-red-600 bg-red-50 p-3 rounded-md border border-red-100">
-                                    <p className="font-semibold">Ordering is currently closed.</p>
-                                    {(() => {
+                                ?.map((ts) => {
+                                    let isOpen = true;
+                                    if (ts.orderStartTime && ts.orderEndTime) {
                                         const now = new Date();
                                         const currentHours = now.getHours().toString().padStart(2, '0');
                                         const currentMinutes = now.getMinutes().toString().padStart(2, '0');
                                         const currentTime = `${currentHours}:${currentMinutes}`;
 
-                                        // Find next available start time
-                                        const nextWindow = timeslots
-                                            .filter(ts => ts.orderStartTime)
-                                            .map(ts => ts.orderStartTime!)
-                                            .sort()
-                                            .find(time => time > currentTime);
-
-                                        // Handle overnight wrapping: if no later time today, find the earliest time "tomorrow"
-                                        const earliestWindow = timeslots
-                                            .filter(ts => ts.orderStartTime)
-                                            .map(ts => ts.orderStartTime!)
-                                            .sort()[0];
-
-                                        const nextTime = nextWindow || earliestWindow;
-
-                                        if (nextTime) {
-                                            return <p className="mt-1">Next ordering window starts at <span className="font-bold">{nextTime}</span></p>;
+                                        if (ts.orderStartTime <= ts.orderEndTime) {
+                                            isOpen = currentTime >= ts.orderStartTime && currentTime <= ts.orderEndTime;
+                                        } else {
+                                            isOpen = currentTime >= ts.orderStartTime || currentTime <= ts.orderEndTime;
                                         }
-                                        return <p className="mt-1">Please check back later.</p>;
-                                    })()}
-                                </div>
-                            )}
+                                    }
+
+                                    return (
+                                        <option key={ts._id} value={ts._id}>
+                                            {ts.label} ({ts.startTime} - {ts.endTime}) - {isOpen ? 'Open' : 'Closed'}
+                                        </option>
+                                    );
+                                })}
+                        </select>
                     </div>
 
                     <div>

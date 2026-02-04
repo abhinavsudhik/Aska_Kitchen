@@ -67,5 +67,6 @@ export default defineSchema({
     })
         .index("by_userId", ["userId"])
         .index("by_timeslot", ["timeslotId"])
-        .index("by_orderDate", ["orderDate"]),
+        .index("by_orderDate", ["orderDate"])
+        .index("by_timeslot_orderDate", ["timeslotId", "orderDate"]),
 });

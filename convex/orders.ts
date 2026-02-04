@@ -1,5 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query, internalQuery } from "./_generated/server";
+import { paginationOptsValidator } from "convex/server";
 
 export const createOrder = mutation({
     args: {
@@ -101,13 +102,16 @@ export const updateStatus = mutation({
 });
 
 export const getMyOrders = query({
-    args: { userId: v.id("users") },
+    args: {
+        userId: v.id("users"),
+        paginationOpts: paginationOptsValidator
+    },
     handler: async (ctx, args) => {
         return await ctx.db
             .query("orders")
             .withIndex("by_userId", (q) => q.eq("userId", args.userId))
             .order("desc")
-            .collect();
+            .paginate(args.paginationOpts);
     },
 });
 
@@ -131,29 +135,43 @@ export const listOrders = query({
         timeslotId: v.optional(v.id("timeslots")),
         startDate: v.optional(v.number()), // Timestamp for start of day
         endDate: v.optional(v.number()),   // Timestamp for end of day
+        paginationOpts: paginationOptsValidator,
     },
     handler: async (ctx, args) => {
-        let orders;
-        if (args.timeslotId) {
-            const timeslotId = args.timeslotId;
-            orders = await ctx.db
+        let ordersQuery;
+
+        if (args.timeslotId && args.startDate && args.endDate) {
+            // Filter by Timeslot AND Date
+            ordersQuery = ctx.db
                 .query("orders")
-                .withIndex("by_timeslot", (q) => q.eq("timeslotId", timeslotId))
-                .collect();
+                .withIndex("by_timeslot_orderDate", (q) =>
+                    q.eq("timeslotId", args.timeslotId!)
+                        .gte("orderDate", args.startDate!)
+                        .lte("orderDate", args.endDate!)
+                );
+        } else if (args.timeslotId) {
+            // Filter by Timeslot only
+            ordersQuery = ctx.db
+                .query("orders")
+                .withIndex("by_timeslot", (q) => q.eq("timeslotId", args.timeslotId!));
+        } else if (args.startDate && args.endDate) {
+            // Filter by Date only
+            ordersQuery = ctx.db
+                .query("orders")
+                .withIndex("by_orderDate", (q) =>
+                    q.gte("orderDate", args.startDate!)
+                        .lte("orderDate", args.endDate!)
+                );
         } else {
-            orders = await ctx.db.query("orders").collect();
+            // No filters
+            ordersQuery = ctx.db.query("orders").order("desc");
         }
 
-        // Apply date filter if provided
-        if (args.startDate !== undefined && args.endDate !== undefined) {
-            orders = orders.filter(o =>
-                o.orderDate >= args.startDate! && o.orderDate <= args.endDate!
-            );
-        }
+        const paginatedResult = await ordersQuery.paginate(args.paginationOpts);
 
         // Enrich with user name and location name
-        const enrichedOrders = await Promise.all(
-            orders.map(async (o) => {
+        const enrichedPage = await Promise.all(
+            paginatedResult.page.map(async (o) => {
                 const user = await ctx.db.get(o.userId);
                 const location = await ctx.db.get(o.locationId);
                 return {
@@ -164,7 +182,10 @@ export const listOrders = query({
             })
         );
 
-        return enrichedOrders;
+        return {
+            ...paginatedResult,
+            page: enrichedPage
+        };
     },
 });
 

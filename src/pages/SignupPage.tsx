@@ -109,7 +109,19 @@ export default function SignupPage() {
         signIn("password", formData)
             .catch((err) => {
                 console.error("Sign up error:", err);
-                const errorMessage = err instanceof Error ? err.message : "Could not create account";
+                let errorMessage = err instanceof Error ? err.message : "Could not create account";
+
+                // Check for specific "Account already exists" error
+                if (errorMessage.includes("Account") && errorMessage.includes("already exists")) {
+                    errorMessage = "Account with this email already exists. Please sign in instead.";
+                } else {
+                    // Clean up duplicate prefixes often seen in Convex/RPC errors
+                    // e.g. "Server Error Uncaught Error: Uncaught Error: ..."
+                    errorMessage = errorMessage.replace(/^(Server Error\s*)+/i, "");
+                    errorMessage = errorMessage.replace(/^(Uncaught Error:\s*)+/i, "");
+                    errorMessage = errorMessage.trim();
+                }
+
                 setError(errorMessage);
             });
     };
@@ -128,6 +140,12 @@ export default function SignupPage() {
                         onSubmit={handleSubmit}
                         className="flex flex-col gap-2"
                     >
+                        <input
+                            name="name"
+                            placeholder="Full Name"
+                            className="w-full px-4 py-2 border rounded-md"
+                            required
+                        />
                         <input
                             name="email"
                             placeholder="Email"

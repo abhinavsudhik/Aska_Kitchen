@@ -10,9 +10,12 @@ export default function SignupPage() {
     const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
     const user = useQuery(api.verification.getCurrentUser);
     const assignRole = useMutation(api.users.assignDefaultRole);
+    const updateWhatsAppNumber = useMutation(api.users.updateWhatsAppNumber);
     const [roleAssigned, setRoleAssigned] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isAssigningRole, setIsAssigningRole] = useState(false);
+    const [showWhatsAppModal, setShowWhatsAppModal] = useState(false);
+    const [whatsappNumber, setWhatsappNumber] = useState("");
 
     useEffect(() => {
         const assignUserRole = async () => {
@@ -33,6 +36,13 @@ export default function SignupPage() {
 
         assignUserRole();
     }, [isAuthenticated, user, roleAssigned, assignRole, isAssigningRole]);
+
+    // Check if authenticated user needs to provide WhatsApp number
+    useEffect(() => {
+        if (isAuthenticated && user && user.role && !user.phone && !showWhatsAppModal) {
+            setShowWhatsAppModal(true);
+        }
+    }, [isAuthenticated, user, showWhatsAppModal]);
 
     // Show loading during initial auth check
     if (isAuthLoading) {
@@ -126,8 +136,62 @@ export default function SignupPage() {
             });
     };
 
+    const handleWhatsAppSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setError(null);
+
+        if (!whatsappNumber.trim()) {
+            setError("WhatsApp number is required");
+            return;
+        }
+
+        try {
+            await updateWhatsAppNumber({ phone: whatsappNumber });
+            setShowWhatsAppModal(false);
+            // Redirect to appropriate page
+            navigate(user?.role === 'admin' ? '/admin/dashboard' : '/home');
+        } catch (err) {
+            console.error("Failed to update WhatsApp number:", err);
+            setError("Failed to save WhatsApp number. Please try again.");
+        }
+    };
+
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+            {/* WhatsApp Number Modal for Google OAuth users */}
+            {showWhatsAppModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full mx-4">
+                        <h2 className="text-2xl font-bold mb-4 text-[#1B4332] font-serif" style={{ fontFamily: "'Playfair Display', serif" }}>
+                            Complete Your Profile
+                        </h2>
+                        <p className="mb-4 text-gray-600">
+                            Please provide your WhatsApp number to complete registration.
+                        </p>
+                        {error && (
+                            <div className="mb-4 p-2 bg-red-100 text-red-700 text-sm rounded">
+                                {error}
+                            </div>
+                        )}
+                        <form onSubmit={handleWhatsAppSubmit} className="flex flex-col gap-4">
+                            <input
+                                type="tel"
+                                value={whatsappNumber}
+                                onChange={(e) => setWhatsappNumber(e.target.value)}
+                                placeholder="WhatsApp Number (e.g., +919876543210)"
+                                className="w-full px-4 py-2 border rounded-md"
+                                required
+                            />
+                            <button
+                                type="submit"
+                                className="w-full py-2 font-semibold text-white transition-colors bg-[#1B4332] rounded-md hover:bg-[#2E7D32]"
+                            >
+                                Continue
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
             <div className="p-8 bg-white rounded-lg shadow-md w-96">
                 <h1 className="mb-6 text-2xl font-bold text-center text-[#1B4332] font-serif" style={{ fontFamily: "'Playfair Display', serif" }}>ASKA Sign Up</h1>
                 {error && (
@@ -143,6 +207,12 @@ export default function SignupPage() {
                         <input
                             name="name"
                             placeholder="Full Name"
+                            className="w-full px-4 py-2 border rounded-md"
+                            required
+                        />
+                        <input
+                            name="phone"
+                            placeholder="WhatsApp Number (e.g., +919876543210)"
                             className="w-full px-4 py-2 border rounded-md"
                             required
                         />

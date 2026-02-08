@@ -37,6 +37,16 @@ export const updateName = mutation({
         await ctx.db.patch(userId, { name: args.name });
     },
 });
+export const updateWhatsAppNumber = mutation({
+    args: { phone: v.string() },
+    handler: async (ctx, args) => {
+        const userId = await auth.getUserId(ctx);
+        if (!userId) throw new Error("Unauthorized");
+
+        await ctx.db.patch(userId, { phone: args.phone });
+    },
+});
+
 export const currentUser = query({
     args: {},
     handler: async (ctx) => {

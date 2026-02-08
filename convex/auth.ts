@@ -8,6 +8,7 @@ const CustomPassword = Password<DataModel>({
     return {
       email: params.email as string,
       name: params.name as string,
+      phone: params.phone as string | undefined,
     };
   },
 });
@@ -20,6 +21,7 @@ export const { auth, signIn, signOut, store, isAuthenticated } = convexAuth({
       return args.existingUserId ?? await ctx.db.insert("users", {
         email: args.profile.email,
         name: args.profile.name,
+        phone: args.profile.phone,
         role: "customer", // Default role
       });
     },

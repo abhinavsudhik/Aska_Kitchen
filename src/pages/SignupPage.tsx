@@ -252,24 +252,6 @@ export default function SignupPage() {
                             Already have an account? Sign in
                         </Link>
                     </div>
-                    <div className="relative flex items-center justify-center my-4">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-300"></div>
-                        </div>
-                        <span className="relative z-10 px-2 bg-white text-sm text-gray-500">OR</span>
-                    </div>
-                    <button
-                        onClick={() => {
-                            setError(null);
-                            signIn("google").catch((err) => {
-                                console.error("Google sign-up error:", err);
-                                setError("Failed to sign up with Google. Please try again.");
-                            });
-                        }}
-                        className="w-full py-2 font-semibold text-white transition-colors bg-blue-600 rounded-md hover:bg-blue-700 flex items-center justify-center gap-2"
-                    >
-                        Sign up with Google
-                    </button>
                 </div>
             </div>
         </div>

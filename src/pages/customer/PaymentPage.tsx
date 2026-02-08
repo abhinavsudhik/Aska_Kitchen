@@ -129,6 +129,21 @@ export default function PaymentPage() {
                     </div>
                 )}
 
+                {/* Support Contact Banner */}
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 w-full text-center">
+                    <p className="text-sm text-blue-800">
+                        <span className="font-semibold">Having trouble?</span> Contact us on WhatsApp:{" "}
+                        <a
+                            href="https://wa.me/919188380514"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:text-blue-800 font-semibold hover:underline"
+                        >
+                            +91 9188380514
+                        </a>
+                    </p>
+                </div>
+
                 {/* Confirm Button */}
                 <button
                     onClick={handlePaymentConfirmed}
@@ -159,4 +174,3 @@ export default function PaymentPage() {
         </div>
     );
 }
-

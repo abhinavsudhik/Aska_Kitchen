@@ -138,6 +138,7 @@ export default function AdminDashboard() {
                         <tr>
                             <th className="px-6 py-3">Order No</th>
                             <th className="px-6 py-3">Customer</th>
+                            <th className="px-6 py-3">WhatsApp</th>
                             <th className="px-6 py-3">Location</th>
                             <th className="px-6 py-3">Items</th>
                             <th className="px-6 py-3 text-right">Total</th>
@@ -150,6 +151,20 @@ export default function AdminDashboard() {
                             <tr key={order._id} className="hover:bg-gray-50">
                                 <td className="px-6 py-4 font-mono font-medium">{order.invoiceNumber}</td>
                                 <td className="px-6 py-4">{order.userName}</td>
+                                <td className="px-6 py-4">
+                                    {order.userWhatsApp ? (
+                                        <a
+                                            href={`https://wa.me/${order.userWhatsApp.replace(/[^0-9]/g, '')}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-green-600 hover:text-green-800 hover:underline"
+                                        >
+                                            {order.userWhatsApp}
+                                        </a>
+                                    ) : (
+                                        <span className="text-gray-400 text-sm">N/A</span>
+                                    )}
+                                </td>
                                 <td className="px-6 py-4">{order.locationName}</td>
                                 <td className="px-6 py-4 text-sm text-gray-600">
                                     {order.items.map(i => `${i.quantity}x ${i.name}`).join(", ")}

@@ -169,7 +169,7 @@ export const listOrders = query({
 
         const paginatedResult = await ordersQuery.paginate(args.paginationOpts);
 
-        // Enrich with user name and location name
+        // Enrich with user name, location name, and WhatsApp
         const enrichedPage = await Promise.all(
             paginatedResult.page.map(async (o) => {
                 const user = await ctx.db.get(o.userId);
@@ -177,6 +177,7 @@ export const listOrders = query({
                 return {
                     ...o,
                     userName: user?.name || "Unknown",
+                    userWhatsApp: user?.phone || null,
                     locationName: location?.name || "Unknown",
                 };
             })

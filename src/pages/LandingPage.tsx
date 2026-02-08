@@ -113,6 +113,17 @@ const LandingPage = () => {
             {/* Footer */}
             <footer className="bg-[#0D2818] text-gray-400 py-8">
                 <div className="container mx-auto px-6 text-center">
+                    <div className="mb-4">
+                        <p className="text-sm mb-2">Need help with your order?</p>
+                        <a
+                            href="https://wa.me/919188380514"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-400 hover:text-green-300 font-semibold"
+                        >
+                            Contact us on WhatsApp: +91 9188380514
+                        </a>
+                    </div>
                     <p>&copy; {new Date().getFullYear()} ASKA. All rights reserved.</p>
                 </div>
             </footer>

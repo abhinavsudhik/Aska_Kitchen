@@ -11,6 +11,12 @@ export default function CartPage() {
     const cartItemIds = cartItems.map(item => item.id);
     const detailedItems = useQuery(api.items.getByIds, { ids: cartItemIds });
 
+    // Fetch timeslot to check ordering window
+    const selectedTimeslot = useQuery(
+        api.timeslots.getById,
+        selectedTimeslotId ? { id: selectedTimeslotId } : "skip"
+    );
+
     const navigate = useNavigate();
 
     // Calculate invalid items
@@ -20,6 +26,35 @@ export default function CartPage() {
     }) || [];
 
     const hasInvalidItems = invalidItems.length > 0;
+
+    // Check if ordering window is open
+    const isOrderingWindowOpen = () => {
+        if (!selectedTimeslot?.orderStartTime || !selectedTimeslot?.orderEndTime) {
+            return true; // If no window is set, allow ordering
+        }
+
+        const now = new Date();
+        const formatter = new Intl.DateTimeFormat("en-GB", {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: false,
+            timeZone: "Asia/Kolkata"
+        });
+        const currentTime = formatter.format(now);
+
+        let isOpen = false;
+        if (selectedTimeslot.orderStartTime <= selectedTimeslot.orderEndTime) {
+            // Normal window (e.g., 06:00 to 11:00)
+            isOpen = currentTime >= selectedTimeslot.orderStartTime && currentTime <= selectedTimeslot.orderEndTime;
+        } else {
+            // Overnight window (e.g., 23:00 to 02:00)
+            isOpen = currentTime >= selectedTimeslot.orderStartTime || currentTime <= selectedTimeslot.orderEndTime;
+        }
+
+        return isOpen;
+    };
+
+    const orderingAllowed = isOrderingWindowOpen();
 
     if (cartItems.length === 0) {
         return (
@@ -38,7 +73,7 @@ export default function CartPage() {
     }
 
     const finalAmount = totalAmount + deliveryCharge;
-    const canCheckout = selectedLocationId && selectedTimeslotId && !hasInvalidItems;
+    const canCheckout = selectedLocationId && selectedTimeslotId && !hasInvalidItems && orderingAllowed;
 
     const handleRemoveInvalid = () => {
         invalidItems.forEach(item => removeFromCart(item._id));
@@ -143,9 +178,21 @@ export default function CartPage() {
                                 : "bg-gray-300 cursor-not-allowed"
                                 }`}
                         >
-                            {canCheckout ? "Proceed to Payment" : "Select Location & Time first"}
+                            {!orderingAllowed && selectedTimeslotId
+                                ? "Ordering Window Closed"
+                                : canCheckout
+                                    ? "Proceed to Payment"
+                                    : "Select Location & Time first"
+                            }
                         </button>
-                        {!canCheckout && <p className="text-xs text-red-500 mt-2 text-center">Please select details in Menu first.</p>}
+                        {!canCheckout && (
+                            <p className="text-xs text-red-500 mt-2 text-center">
+                                {!orderingAllowed && selectedTimeslot
+                                    ? `Ordering available from ${selectedTimeslot.orderStartTime} to ${selectedTimeslot.orderEndTime}`
+                                    : "Please select details in Menu first."
+                                }
+                            </p>
+                        )}
                     </div>
                 </div>
             </div>

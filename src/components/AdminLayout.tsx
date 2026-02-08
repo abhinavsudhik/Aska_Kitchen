@@ -1,6 +1,6 @@
 import { Outlet, Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuthActions } from "@convex-dev/auth/react";
-import { LogOut, LayoutDashboard, Utensils, MapPin, DollarSign } from "lucide-react";
+import { LogOut, LayoutDashboard, Utensils, MapPin, DollarSign, Settings } from "lucide-react";
 import clsx from "clsx";
 
 export default function AdminLayout() {
@@ -18,6 +18,7 @@ export default function AdminLayout() {
         { label: "Items", href: "/admin/items", icon: Utensils },
         { label: "Locations & Time", href: "/admin/locations", icon: MapPin },
         { label: "Settlements", href: "/admin/settlements", icon: DollarSign },
+        { label: "Settings", href: "/admin/settings", icon: Settings },
     ];
 
     return (

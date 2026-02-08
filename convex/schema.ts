@@ -69,4 +69,9 @@ export default defineSchema({
         .index("by_timeslot", ["timeslotId"])
         .index("by_orderDate", ["orderDate"])
         .index("by_timeslot_orderDate", ["timeslotId", "orderDate"]),
+
+    settings: defineTable({
+        key: v.string(),
+        value: v.union(v.string(), v.number(), v.boolean()),
+    }).index("by_key", ["key"]),
 });

@@ -1,5 +1,7 @@
 import { createContext, useContext, useState, type ReactNode, useEffect } from "react";
 import type { Id } from "../../convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 export interface CartItem {
     id: Id<"items">;
@@ -29,7 +31,10 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [selectedLocationId, setSelectedLocationId] = useState<Id<"locations"> | null>(null);
     const [selectedTimeslotId, setSelectedTimeslotId] = useState<Id<"timeslots"> | null>(null);
-    const deliveryCharge = 50; // Fixed delivery charge for now
+
+    // Fetch delivery charge from settings
+    const deliveryChargeSetting = useQuery(api.settings.getSetting, { key: "deliveryCharge" });
+    const deliveryCharge = typeof deliveryChargeSetting === "number" ? deliveryChargeSetting : 50; // Fallback to 50
 
     // Persist cart to local storage
     useEffect(() => {

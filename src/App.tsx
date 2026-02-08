@@ -21,6 +21,7 @@ const AdminDashboard = lazy(() => import("./pages/admin/Dashboard"));
 const ItemsPage = lazy(() => import("./pages/admin/ItemsPage"));
 const LocationTimeslotPage = lazy(() => import("./pages/admin/LocationTimeslotPage"));
 const SettlementsPage = lazy(() => import("./pages/admin/SettlementsPage"));
+const SettingsPage = lazy(() => import("./pages/admin/SettingsPage"));
 
 import CustomerLayout from "./components/CustomerLayout";
 import AdminLayout from "./components/AdminLayout";
@@ -81,6 +82,7 @@ function App() {
               <Route path="/admin/items" element={<ProtectedRoute role="admin"><ItemsPage /></ProtectedRoute>} />
               <Route path="/admin/locations" element={<ProtectedRoute role="admin"><LocationTimeslotPage /></ProtectedRoute>} />
               <Route path="/admin/settlements" element={<ProtectedRoute role="admin"><SettlementsPage /></ProtectedRoute>} />
+              <Route path="/admin/settings" element={<ProtectedRoute role="admin"><SettingsPage /></ProtectedRoute>} />
             </Route>
 
           </Routes>

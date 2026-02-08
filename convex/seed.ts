@@ -79,6 +79,12 @@ export const seed = mutation({
             imageUrl: "https://images.unsplash.com/photo-1622483767028-3f66f32aef97?auto=format&fit=crop&w=500&q=60",
         });
 
+        // 4. Initialize Settings
+        await ctx.db.insert("settings", {
+            key: "deliveryCharge",
+            value: 50,
+        });
+
         return "Seeding complete!";
     },
 });
